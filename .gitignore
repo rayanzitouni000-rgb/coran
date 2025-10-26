@@ -35,5 +35,5 @@ logs
 coverage
 
 # Local assets not for git
-public/mushaf/
+# public/mushaf/   <-- suivi activé pour déploiement
 public/fonts/
