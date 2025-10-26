@@ -105,7 +105,6 @@ export default function Home() {
                 <h1 className="text-xl sm:text-2xl font-bold text-amber-900">المصحف الشريف</h1>
                 <p className="hidden sm:block text-sm text-amber-600">Mushaf Interactif</p>
               </div>
-              <a href="/verses" className="ml-2 rounded-lg bg-amber-600 px-3 py-2 text-white hover:bg-amber-700">Versets</a>
             </div>
           </div>
         </header>
