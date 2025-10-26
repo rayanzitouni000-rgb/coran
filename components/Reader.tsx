@@ -1,34 +1,33 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import Image from 'next/image';
 
 interface ReaderProps { currentPage: number; onPageChange: (p: number) => void }
 
 export default function Reader({ currentPage, onPageChange }: ReaderProps) {
   const [imageSrc, setImageSrc] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const touchStartX = useRef<number | null>(null);
+
+  const baseUrl = process.env.NEXT_PUBLIC_MUSHAF_BASE_URL || '/mushaf';
 
   useEffect(() => {
     const pageStr = Math.max(1, Math.min(604, currentPage)).toString().padStart(3, '0');
-    const src = `/mushaf/page${pageStr}.png`;
+    const src = `${baseUrl}/page${pageStr}.png`;
     setLoading(true);
+    setError(null);
     setImageSrc(src);
-  }, [currentPage]);
+  }, [currentPage, baseUrl]);
 
   const handlePrev = () => onPageChange(Math.max(1, currentPage - 1));
   const handleNext = () => onPageChange(Math.min(604, currentPage + 1));
 
-  const onTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
+  const onTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
   const onTouchEnd = (e: React.TouchEvent) => {
     if (touchStartX.current == null) return;
     const delta = e.changedTouches[0].clientX - touchStartX.current;
-    if (Math.abs(delta) > 50) {
-      if (delta > 0) handlePrev(); else handleNext();
-    }
+    if (Math.abs(delta) > 50) { if (delta > 0) handlePrev(); else handleNext(); }
     touchStartX.current = null;
   };
 
@@ -42,16 +41,29 @@ export default function Reader({ currentPage, onPageChange }: ReaderProps) {
           {loading && (
             <div className="aspect-[2/3] w-full animate-pulse bg-amber-100" />
           )}
+
           {imageSrc && (
-            <Image
+            <img
               src={imageSrc}
               alt={`Page ${currentPage}`}
-              width={900}
-              height={1350}
               className={`h-auto w-full select-none ${loading ? 'opacity-0' : 'opacity-100'} transition-opacity`}
-              priority
-              onLoadingComplete={() => setLoading(false)}
+              onLoad={() => setLoading(false)}
+              onError={() => {
+                setLoading(false);
+                setError('Image introuvable');
+              }}
             />
+          )}
+
+          {error && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-amber-50/90 text-center p-6">
+              <div className="text-amber-900 font-semibold mb-2">Aucune image trouvée</div>
+              <p className="text-amber-700 text-sm">
+                Déposez les images dans <code className="font-mono">public/mushaf/</code>
+                {' '}ou configurez <code className="font-mono">NEXT_PUBLIC_MUSHAF_BASE_URL</code> vers un hébergement public
+                (ex: CDN, Vercel Blob).
+              </p>
+            </div>
           )}
         </div>
       </div>
